@@ -1,0 +1,4 @@
+protobuf==3.14.0
+mysqlclient==2.0.3
+six==1.15.0
+numpy==1.19.2

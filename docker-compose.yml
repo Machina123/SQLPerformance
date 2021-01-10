@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+  test-script:
+    build:
+      context: .
+      dockerfile: Dockerfile-python
+    depends_on:
+      - mysql-server
+      - mariadb-server
+    volumes:
+      - .:/usr/src/app
+    environment:
+      PYTHONUNBUFFERED: 1
+    working_dir: /usr/src/app
+    command: python main.py
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+  mysql-server:
+    image: mysql/mysql-server:5.7
+    command: --max-allowed-packet=256M
+    env_file:
+      - mysql.env
+    ports:
+      - "3306"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2048M
+
+  mariadb-server:
+    env_file:
+      - mysql.env
+    image: mariadb/server:10.3
+    command: --max-allowed-packet=256M
+    ports:
+      - "3306"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2048M
