@@ -97,38 +97,9 @@ def select_string(conn: Connection):
 
 def select_aggregates(conn: Connection):
     """
-    Find multiple aggregates grouped and sorted descending by `popularity`
+    Find multiple aggregates of salary grouped by employee and sorted descending by average salary
     """
-    time_start = datetime.now()
-    with conn.cursor() as cur:
-        sql = """
-        SELECT AVG(`acousticness`), AVG(`danceability`), AVG(`energy`), AVG(`instrumentalness`), MAX(`duration_ms`),
-        AVG(`valence`), MIN(`loudness`), AVG(`speechiness`) FROM data GROUP BY `popularity` ORDER BY `popularity` DESC;
-        """
-        cur.execute(sql)
-        cur.fetchall()
-    time_end = datetime.now()
-    return (time_end - time_start).total_seconds()
-
-
-def alter_add_column(conn: Connection):
-    """
-    Add new column, fill it with average of other columns and delete it
-    """
-    time_start = datetime.now()
-    with conn.cursor() as cur:
-        sql = "ALTER TABLE data ADD COLUMN `average_features` FLOAT;"
-        cur.execute(sql)
-        sql = """UPDATE data 
-        SET `average_features` = (`acousticness` + `danceability` + `energy` + `instrumentalness` + `valence`
-        + `speechiness`) / 6;
-        """
-        cur.execute(sql)
-        sql = "ALTER TABLE data DROP COLUMN `average_features`"
-        cur.execute(sql)
-    conn.commit()
-    time_end = datetime.now()
-    return (time_end - time_start).total_seconds()
+    return do_single_query(conn, queries.QUERY_SELECT_AGGREGATE)
 
 
 def do_tests_singlethread(conn: Connection, log: Logger, database: str):
@@ -143,8 +114,7 @@ def do_tests_singlethread(conn: Connection, log: Logger, database: str):
     intermediate["select_join"] = []
     intermediate["select_group"] = []
     intermediate["select_string"] = []
-    # intermediate["select_aggregates"] = []
-    # intermediate["alter_add_column"] = []
+    intermediate["select_aggregates"] = []
 
     for i in range(NUM_REPEATS_INSERT):
         print(f"Inserting... {i} / {NUM_REPEATS_INSERT}")
@@ -160,8 +130,7 @@ def do_tests_singlethread(conn: Connection, log: Logger, database: str):
         intermediate["select_join"].append(select_join(conn))
         intermediate["select_group"].append(select_group(conn))
         intermediate["select_string"].append(select_string(conn))
-        # intermediate["select_aggregates"].append(select_aggregates(conn))
-        # intermediate["alter_add_column"].append(alter_add_column(conn))
+        intermediate["select_aggregates"].append(select_aggregates(conn))
 
     print("Done")
 

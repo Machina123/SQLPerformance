@@ -66,6 +66,17 @@ JOIN `departments` ON `departments`.`dept_no` = `dept_emp`.`dept_no`
 GROUP BY `departments`.`dept_no`;
 """
 
+QUERY_SELECT_AGGREGATE = """SELECT `employees`.`first_name`, `employees`.`last_name`, 
+SUM(`salaries`.`salary`) AS SumSalary,
+AVG(`salaries`.`salary`) AS AvgSalary, 
+MAX(`salaries`.`salary`) AS MaxSalary, 
+MIN(`salaries`.`salary`) AS MinSalary
+FROM `salaries`
+JOIN `employees` ON `employees`.`emp_no` = `salaries`.`emp_no`
+GROUP BY `employees`.`emp_no`
+ORDER BY `AvgSalary` DESC; 
+"""
+
 
 def query_select_string(args):
     return f"""SELECT `first_name`, `last_name` FROM `employees` 
