@@ -14,7 +14,7 @@ import queries
 NUM_REPEATS_INSERT = 10
 NUM_REPEATS = 200
 
-OUTPUT_COLUMNS = ["database", "method", "max", "min", "avg", "stddev"]
+OUTPUT_COLUMNS = ["database", "method", "max", "min", "avg", "median", "stddev"]
 
 DATA_FILES = ["load_departments.dump", "load_employees.dump", "load_dept_emp.dump", "load_dept_manager.dump",
               "load_titles.dump", "load_salaries1.dump", "load_salaries2.dump", "load_salaries3.dump"]
@@ -140,6 +140,7 @@ def do_tests_singlethread(conn: Connection, log: Logger, database: str):
             "min": "%.6f" % np.amin(intermediate[method]),
             "max": "%.6f" % np.amax(intermediate[method]),
             "avg": "%.6f" % np.mean(intermediate[method]),
+            "median": "%.6f" % np.median(intermediate[method]),
             "stddev": np.std(intermediate[method]),
             "database": database
         })
