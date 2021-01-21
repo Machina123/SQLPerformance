@@ -21,7 +21,7 @@ services:
 
   mysql-server:
     image: mysql/mysql-server:5.7
-    command: --max-allowed-packet=256M
+    command: --max-allowed-packet=256M --query-cache-size=0
     env_file:
       - mysql.env
     ports:
@@ -36,7 +36,7 @@ services:
     env_file:
       - mysql.env
     image: mariadb/server:10.3
-    command: --max-allowed-packet=256M
+    command: --max-allowed-packet=256M --query-cache-size=0
     ports:
       - "3306"
     deploy:

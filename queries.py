@@ -1,3 +1,5 @@
+TABLES = ["departments", "dept_manager", "dept_emp", "titles", "salaries"]
+
 QUERYLIST_CREATE_STRUCTURE = [
     "DROP TABLE IF EXISTS dept_emp, dept_manager, titles, salaries, employees, departments;",
     """CREATE TABLE employees (
@@ -51,14 +53,26 @@ QUERYLIST_CREATE_STRUCTURE = [
     );"""
 ]
 
-QUERY_SELECT_SIMPLE = "SELECT * FROM employees WHERE `gender`='F';"
+QUERY_DROP_STRUCTURE = "DROP TABLE IF EXISTS dept_emp, dept_manager, titles, salaries, departments;"
 
-QUERY_SELECT_SORT = "SELECT * FROM employees ORDER BY `last_name` LIMIT 10000;"
+QUERYLIST_CREATE_DUMMY_STRUCTURE = [
+    "CREATE TABLE dummy_departments SELECT * FROM departments;",
+    "CREATE TABLE dummy_dept_manager SELECT * FROM dept_manager;",
+    "CREATE TABLE dummy_dept_emp SELECT * FROM dept_emp;",
+    "CREATE TABLE dummy_titles SELECT * FROM titles;",
+    "CREATE TABLE dummy_salaries SELECT * FROM salaries;"
+]
+
+QUERY_SELECT_SIMPLE = """SELECT * FROM `employees` 
+JOIN `titles` ON `titles`.`emp_no` = `employees`.`emp_no`
+WHERE `gender`='F' AND `title`='Engineer';
+"""
+
+QUERY_SELECT_SORT = "SELECT * FROM employees ORDER BY `last_name`;"
 
 QUERY_SELECT_JOIN = """SELECT `first_name`, `last_name`, `title` FROM `employees`
 JOIN `titles` ON `employees`.`emp_no` = `titles`.`emp_no`
-WHERE `from_date` > '2000-01-01' AND `to_date` < '2000-01-01'
-LIMIT 10000;
+WHERE `from_date` < '2000-01-01' AND `to_date` > '2000-01-01';
 """
 
 QUERY_SELECT_GROUP = """SELECT `departments`.`dept_name`, COUNT(1) FROM `dept_emp`
@@ -77,8 +91,16 @@ GROUP BY `employees`.`emp_no`
 ORDER BY `AvgSalary` DESC; 
 """
 
+QUERY_DIS_FULL_GROUP_BY = "SET SESSION sql_mode = TRIM(BOTH ',' FROM REPLACE(@@SESSION.sql_mode, 'ONLY_FULL_GROUP_BY', ''));"
+
 
 def query_select_string(args):
     return f"""SELECT `first_name`, `last_name` FROM `employees` 
     WHERE `first_name` LIKE '{args[0]}%' AND `last_name` LIKE '{args[1]}%';
     """
+
+
+def make_query_on_dummy(query: str):
+    for table in TABLES:
+        query = query.replace(table, f"dummy_{table}")
+    return query
