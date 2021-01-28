@@ -156,6 +156,13 @@ def select_aggregates_dummy(conn: Connection):
     return do_single_query(conn, queries.QUERY_SELECT_AGGREGATE)
 
 
+def multiply_data_in_employees(conn: Connection):
+    """
+    Multiply data in `employees` table
+    """
+    return do_single_query(conn, queries.QUERY_MULTIPLY_EMPLOYEES)
+
+
 def do_tests_singlethread(conn: Connection, database: str):
     conn.ping()
     output = []
@@ -203,6 +210,21 @@ def do_tests_singlethread(conn: Connection, database: str):
         intermediate["select_string_dummy"].append(select_string_dummy(conn, select_string_args))
         intermediate["select_aggregates_dummy"].append(select_aggregates_dummy(conn))
 
+    # print("Doubling data in \"employees\" and repeating queries...")
+    # multiply_data_in_employees(conn)
+    # for i in range(NUM_REPEATS):
+    #     if i % 10 == 0:
+    #         print(f"Querying MULTIPLIED... {i} / {NUM_REPEATS}")
+    #     intermediate["select_simple_big"].append(select_simple(conn))
+    #     intermediate["select_sorting_big"].append(select_sorting(conn))
+    #     intermediate["select_join_big"].append(select_join(conn))
+    #     intermediate["select_string_big"].append(select_string(conn, select_string_args))
+    #     intermediate["select_aggregates_big"].append(select_aggregates(conn))
+    #     intermediate["select_simple_big_dummy"].append(select_simple_dummy(conn))
+    #     intermediate["select_join_big_dummy"].append(select_join_dummy(conn))
+    #     intermediate["select_string_big_dummy"].append(select_string_dummy(conn, select_string_args))
+    #     intermediate["select_aggregates_big_dummy"].append(select_aggregates_dummy(conn))
+
     print("Done")
 
     for method in intermediate.keys():
@@ -232,6 +254,11 @@ if __name__ == '__main__':
                                  db=DB_NAME,
                                  charset=DB_CSET)
     do_single_query(conn_mysql, queries.QUERY_DIS_FULL_GROUP_BY)
+    log.i(">> ENGINE: MyISAM")
+    do_single_query(conn_mysql, queries.QUERY_CHANGE_ENGINE_MYISAM)
+    res_aggregated_my_isam, res_details_my_isam = do_tests_singlethread(conn_mysql, "mysql_isam")
+    log.i(">> ENGINE: InnoDB")
+    do_single_query(conn_mysql, queries.QUERY_CHANGE_ENGINE_INNODB)
     res_aggregated_my, res_details_my = do_tests_singlethread(conn_mysql, "mysql")
 
     log.i("> STEP 2: test MariaDB performance")
@@ -240,6 +267,11 @@ if __name__ == '__main__':
                                  password=DB_PASS,
                                  db=DB_NAME,
                                  charset=DB_CSET)
+    log.i(">> ENGINE: MyISAM")
+    do_single_query(conn_maria, queries.QUERY_CHANGE_ENGINE_MYISAM)
+    res_aggregated_ma_isam, res_details_ma_isam = do_tests_singlethread(conn_maria, "maria_isam")
+    log.i(">> ENGINE: InnoDB")
+    do_single_query(conn_maria, queries.QUERY_CHANGE_ENGINE_INNODB)
     res_aggregated_ma, res_details_ma = do_tests_singlethread(conn_maria, "maria")
 
     log.i("> STEP 3: write results")
@@ -247,10 +279,17 @@ if __name__ == '__main__':
         writer = csv.DictWriter(output, OUTPUT_COLUMNS, dialect="excel")
         writer.writeheader()
         writer.writerows(res_aggregated_my)
+        writer.writerows(res_aggregated_my_isam)
         writer.writerows(res_aggregated_ma)
+        writer.writerows(res_aggregated_ma_isam)
 
     with open(f"logs/{NOW}-details.json", "w") as out_json:
-        json.dump({"mysql": res_details_my, "maria": res_details_ma}, out_json)
+        json.dump({
+            "mysql": res_details_my,
+            "maria": res_details_ma,
+            "mysql_isam": res_details_my_isam,
+            "maria_isam": res_details_ma_isam
+        }, out_json)
 
     log.i(f">> saved to logs/{NOW}-results.csv")
     log.i(f">> saved details to logs/{NOW}-details.json")

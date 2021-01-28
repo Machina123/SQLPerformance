@@ -91,7 +91,13 @@ GROUP BY `employees`.`emp_no`
 ORDER BY `AvgSalary` DESC; 
 """
 
+
 QUERY_DIS_FULL_GROUP_BY = "SET SESSION sql_mode = TRIM(BOTH ',' FROM REPLACE(@@SESSION.sql_mode, 'ONLY_FULL_GROUP_BY', ''));"
+
+QUERY_CHANGE_ENGINE_MYISAM = "SET default_storage_engine='MyISAM';"
+QUERY_CHANGE_ENGINE_INNODB = "SET default_storage_engine='InnoDB';"
+
+QUERY_MULTIPLY_EMPLOYEES = "INSERT INTO `employees` SELECT * FROM `employees`;"
 
 
 def query_select_string(args):
